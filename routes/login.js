@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-// const cookieParser = require('cookie-parser');
 
 // GET login page
 router.get('/', (req, res, next) => {
+    // create url to request to spotify api code to then get access token
     const scopes = encodeURIComponent('user-read-currently-playing');
     const redirectURI = encodeURIComponent('http://localhost:3000/callback');
     const clientID = 'de790d81bf5a45189f2273ba2a22cf3f';
