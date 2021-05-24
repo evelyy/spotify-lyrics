@@ -1,4 +1,13 @@
 extends layout 
 
 block content 
-    h1 now listening to #{trackName}, by #{artistName}
+    div
+        table 
+            tr 
+                th 
+                    img(src= albumArt)
+            tr 
+                th track: #{trackName}
+            tr 
+                th artist: #{artistName}
+    
