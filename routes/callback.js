@@ -3,13 +3,14 @@ const router = express.Router();
 const cookieParser = require('cookie-parser');
 const createError = require('http-errors');
 const superagent = require('superagent');
-fs = require('fs');
+const fs = require('fs');
+const { response } = require('express');
 
 router.use(cookieParser());
 
 // GET login page
 router.get('/', (req, res, next) => {
-    if(!req.query.error && req.query.state === req.cookies.state) {
+    if(!req.query.error && req.query.state === req.cookies.spotifyState) {
         // read sensitive info from file and then post to spotify api for auth token
         fs.readFile('./tokens.json', 'utf8', (error, data) => {
             if (error) {
@@ -27,8 +28,8 @@ router.get('/', (req, res, next) => {
                         redirect_uri: 'http://localhost:3000/callback'
                     })
                     .then(response => {
-                        res.cookie('accessToken', response.body.access_token, { maxAge: response.body.expires_in * 1000, httpOnly: true });
-                        res.cookie('refreshToken', response.body.refresh_token, { maxAge: 9999999999, httpOnly: true });
+                        res.cookie('spotifyAccessToken', response.body.access_token, { maxAge: response.body.expires_in * 1000, httpOnly: true });
+                        res.cookie('spotifyRefreshToken', response.body.refresh_token, { maxAge: 9999999999, httpOnly: true });
                         res.redirect('/');
                     })
                     .catch(err => {
@@ -40,5 +41,41 @@ router.get('/', (req, res, next) => {
         next(createError(406))
     }
 });
+
+// get genius api callback and deal with it
+router.get('/genius', (req, res, next) => {
+    // console.log(req.query);
+    if(!req.query.error && req.query.state === req.cookies.geniusState) {
+        fs.readFile('./tokens.json', 'utf8', (fileError, fileData) => {
+            if(fileError) {
+                console.log(`Error reading file from disk: ${fileError}`);
+            } else {
+                const json_data = JSON.parse(fileData);
+                const geniusClientID = json_data[0].genius_client_id;
+                const geniusClientSecret = json_data[0].genius_client_secret;
+                superagent
+                    .post('https://api.genius.com/oauth/token')
+                    .send({
+                        code: req.query.code,
+                        client_secret: geniusClientSecret,
+                        grant_type: 'authorization_code',
+                        client_id: geniusClientID,
+                        redirect_uri: 'http://localhost:3000/callback/genius',
+                        response_type: 'code'
+                    })
+                    .then(geniusRes => {
+                        res.cookie('geniusAccessToken', geniusRes.body.access_token, { maxAge: 999999999999999999, httpOnly: true });
+                        res.redirect('/');
+                    })
+                    .catch(geniusErr => {
+                        console.log(geniusErr);
+                    })
+            }
+        });
+
+    } else {
+        next(createError(406))
+    }
+})
 
 module.exports = router;
