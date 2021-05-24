@@ -19,23 +19,23 @@ router.get('/', (req, res, next) => {
                 const code = Buffer.from(`${json_data[0].client_id}:${json_data[0].client_secret}`).toString('base64');
                 superagent
                     .post('https://accounts.spotify.com/api/token')
+                    .set('Authorization', `Basic ${code}`)
+                    .set('Content-Type', 'application/x-www-form-urlencoded')
                     .send({
                         grant_type: 'authorization_code',
                         code: req.query.code,
                         redirect_uri: 'http://localhost:3000/callback'
                     })
-                    .set('Authorization', `Basic ${code}`)
-                    .set('Content-Type', 'application/x-www-form-urlencoded')
                     .then(response => {
                         res.cookie('accessToken', response.body.access_token, { maxAge: response.body.expires_in * 1000, httpOnly: true });
-                        res.cookie('refreshToken', response.body.refresh_token, { maxAge: 9999999999999999999999999, httpOnly: true });
+                        res.cookie('refreshToken', response.body.refresh_token, { maxAge: 9999999999, httpOnly: true });
+                        res.redirect('/');
                     })
                     .catch(err => {
-                        console.log(err.response.body);
+                        console.log(err);
                     })
             }
         })
-        res.redirect('/');
     } else {
         next(createError(406))
     }
