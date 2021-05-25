@@ -25,7 +25,7 @@ router.get('/', (req, res, next) => {
                     const track = JSON.parse(spotifyRes.text).item;
                     // console.log(track);
                     const accessToken = `Bearer ${req.cookies.geniusAccessToken}`;
-                    console.log(accessToken);
+                    // console.log(accessToken);
                     // genius call
                     const term = encodeURIComponent(`${track.name} ${track.artists[0].name}`)
                     const config = {};
@@ -56,7 +56,9 @@ router.get('/', (req, res, next) => {
                         artistName: track.artists[0].name, 
                         albumArt: track.album.images[1].url,
                         artistLink: track.artists[0].external_urls.spotify,
-                        trackLink: track.external_urls.spotify
+                        trackLink: track.external_urls.spotify,
+                        lastfmTrackName: encodeURI(track.name),
+                        lastfmArtistName: encodeURIComponent(track.artists[0].name)
                     });
                 })
                 .catch(spotifyErr => {
@@ -69,7 +71,7 @@ router.get('/', (req, res, next) => {
             res.redirect('/login/genius');
         }
     } else {
-        res.redirect('/login');
+        res.redirect('/login/spotify');
     }
 });
 
