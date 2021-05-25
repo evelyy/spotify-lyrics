@@ -4,6 +4,8 @@ const cookieParser = require('cookie-parser');
 const createError = require('http-errors');
 const superagent = require('superagent');
 const axios = require('axios');
+const Genius = require("genius-lyrics");
+const Client = new Genius.Client("top-secret-optional-key");
 
 
 router.use(cookieParser());
@@ -24,21 +26,25 @@ router.get('/', (req, res, next) => {
                     const accessToken = `Bearer ${req.cookies.geniusAccessToken}`;
                     console.log(accessToken);
                     // genius call
-                    axios
-                        .get('api.genius.com/search?q=west+lachie', {
-                            headers: {
-                                Authorization: accessToken
-                            }
-                        })
+                    const term = encodeURIComponent(`${track.name} ${track.artists[0].name}`)
+                    const config = {};
+                    config.headers = {};
+                    config.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36";
+                    config.headers["Authorization"] = accessToken;
+                    axios.get(`api.genius.com/search?q=${term}`, config)
                         .then(geniusRes => {
-                            console.log(JSON.parse(geniusRes).hits);
+                            console.log(geniusRes);
                         })
                         .catch(geniusErr => {
-                            console.log(geniusErr.Error);
+                            console.log(geniusErr);
                         })
+                    if(geniusRes.data.error) {
+                        console.log('fuck');
+                        console.log(geniusRes.data.error_description);
+                    }
                     // superagent
                     //     .get('api.genius.com/search')
-                    //     .send(Authorization, accessToken)
+                    //     .send('Authorization', accessToken)
                     //     // .set('Accept', 'application/json')
                     //     .send('q', `west lachie`)
                     //     .then(geniusRes => {
