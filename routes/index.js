@@ -23,6 +23,7 @@ router.get('/', (req, res, next) => {
                 .then(spotifyRes => {
                     // console.log(spotifyRes);
                     const track = JSON.parse(spotifyRes.text).item;
+                    // console.log(track);
                     const accessToken = `Bearer ${req.cookies.geniusAccessToken}`;
                     console.log(accessToken);
                     // genius call
@@ -31,17 +32,13 @@ router.get('/', (req, res, next) => {
                     config.headers = {};
                     config.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36";
                     config.headers["Authorization"] = accessToken;
-                    axios.get(`api.genius.com/search?q=${term}`, config)
-                        .then(geniusRes => {
-                            console.log(geniusRes);
-                        })
-                        .catch(geniusErr => {
-                            console.log(geniusErr);
-                        })
-                    if(geniusRes.data.error) {
-                        console.log('fuck');
-                        console.log(geniusRes.data.error_description);
-                    }
+                    // axios.get(`api.genius.com/search?q=${term}`, config)
+                    //     .then(geniusRes => {
+                    //         console.log(geniusRes);
+                    //     })
+                    //     .catch(geniusErr => {
+                    //         console.log(geniusErr);
+                    //     })
                     // superagent
                     //     .get('api.genius.com/search')
                     //     .send('Authorization', accessToken)
@@ -57,10 +54,13 @@ router.get('/', (req, res, next) => {
                         title: `now playing: ${track.name}`, 
                         trackName: track.name, 
                         artistName: track.artists[0].name, 
-                        albumArt: track.album.images[1].url 
+                        albumArt: track.album.images[1].url,
+                        artistLink: track.artists[0].external_urls.spotify,
+                        trackLink: track.external_urls.spotify
                     });
                 })
                 .catch(spotifyErr => {
+                    console.log(spotifyErr);
                     res.render('error');
                     next(createError(spotifyErr));
                 })

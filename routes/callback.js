@@ -9,7 +9,7 @@ const { response } = require('express');
 router.use(cookieParser());
 
 // GET login page
-router.get('/', (req, res, next) => {
+router.get('/spotify', (req, res, next) => {
     if(!req.query.error && req.query.state === req.cookies.spotifyState) {
         // read sensitive info from file and then post to spotify api for auth token
         fs.readFile('./tokens.json', 'utf8', (error, data) => {
@@ -25,7 +25,7 @@ router.get('/', (req, res, next) => {
                     .send({
                         grant_type: 'authorization_code',
                         code: req.query.code,
-                        redirect_uri: 'http://localhost:3000/callback'
+                        redirect_uri: 'http://localhost:3000/callback/spotify'
                     })
                     .then(response => {
                         res.cookie('spotifyAccessToken', response.body.access_token, { maxAge: response.body.expires_in * 1000, httpOnly: true });

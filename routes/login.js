@@ -3,7 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 
 // GET login page
-router.get('/', (req, res, next) => {
+router.get('/spotify', (req, res, next) => {
     // create url to request to spotify api code to then get access token
     fs.readFile('./tokens.json', 'utf8', (error, data) => {
         if (error) {
@@ -11,7 +11,7 @@ router.get('/', (req, res, next) => {
         } else {
             const clientID = JSON.parse(data)[0].client_id;
             const scopes = encodeURIComponent('user-read-playback-state');
-            const redirectURI = encodeURIComponent('http://localhost:3000/callback');
+            const redirectURI = encodeURIComponent('http://localhost:3000/callback/spotify');
             const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
             res.cookie('spotifyState', state, { maxAge: 900000, httpOnly: true });
             res.redirect(`https://accounts.spotify.com/authorize?response_type=code&client_id=${clientID}&scope=${scopes}&redirect_uri=${redirectURI}&state=${state}`);

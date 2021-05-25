@@ -4,10 +4,21 @@ block content
     div
         table 
             tr 
-                th 
-                    img(src= albumArt)
+                th
+                    img(src=albumArt)
+
             tr 
-                th track: #{trackName}
+                th(class='table-text') #{trackName}
+                th(class='table-logo')
+                    a(href= `${trackLink}`)
+                        img(class='logo' src='https://i.imgur.com/jTDGgrq.png')
+                    a(href=`https://last.fm/music/${artistName}`)
+                        img(class='logo' src='https://i.imgur.com/i23PrWds.png')    
             tr 
-                th artist: #{artistName}
+                th(class='table-text') #{artistName}
+                th(class='table-logo')
+                    a(href=`${artistLink}`)
+                        img(class='logo' src='https://i.imgur.com/jTDGgrq.png')
+                    a(href=`https://last.fm/music/${artistName}`)
+                        img(class='logo' src='https://i.imgur.com/i23PrWds.png')
     
