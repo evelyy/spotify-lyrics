@@ -25,7 +25,7 @@ router.get('/genius', (req, res, next) => {
             console.log(`Error reading file from disk: ${error}`);
         } else {
             const clientID = JSON.parse(data)[0].genius_client_id;
-            const scope = '';
+            const scope = 'me';
             const redirect_uri = encodeURIComponent('http://localhost:3000/callback/genius');
             const response_type = 'code';
             const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);

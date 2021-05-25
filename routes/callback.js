@@ -64,6 +64,7 @@ router.get('/genius', (req, res, next) => {
                         response_type: 'code'
                     })
                     .then(geniusRes => {
+                        console.log(geniusRes.body.access_token);
                         res.cookie('geniusAccessToken', geniusRes.body.access_token, { maxAge: 999999999999999999, httpOnly: true });
                         res.redirect('/');
                     })
