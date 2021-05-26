@@ -26,21 +26,26 @@ router.get('/', async (req, res, next) => {
         if(req.cookies.geniusAccessToken) {
             // we have both tokens !
             const track = await spotifyFetch(req);
-            var lyrics = await geniusFetch(track);
+            var trackName;
+            if (track.name.includes(' - ') && track.name.toUpperCase().includes('REMASTER')) {
+                trackName = track.name.split(' - ')[0];
+            } else {
+                trackName = track.name;
+            }
+            var lyrics = await geniusFetch(track, trackName);
             if(lyrics == 0) {
                 lyrics = ['No lyrics found. Check Genius?'];
             } else {
                 lyrics = lyrics.split('\n');
             }
-            console.log(lyrics);
             res.render('playing', { 
                 title: `now playing: ${track.name}`, 
-                trackName: track.name, 
+                trackName: track.name,
                 artistName: track.artists[0].name, 
                 albumArt: track.album.images[1].url,
                 artistLink: track.artists[0].external_urls.spotify,
                 trackLink: track.external_urls.spotify,
-                lastfmTrackName: encodeURI(track.name),
+                lastfmTrackName: encodeURI(trackName),
                 lastfmArtistName: encodeURIComponent(track.artists[0].name),
                 lyrics: lyrics
             });
@@ -69,10 +74,10 @@ async function spotifyFetch(req) {
     
 }
 
-async function geniusFetch(track) {
+async function geniusFetch(track, trackName) {
     var returnValue = 1;
     try {
-        var searches = await Client.songs.search(`${track.name} ${track.artists[0].name}`)
+        var searches = await Client.songs.search(`${trackName} ${track.artists[0].name}`).catch(console.log())
     } catch {
         returnValue = 0
     }
