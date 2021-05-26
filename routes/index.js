@@ -29,6 +29,8 @@ router.get('/', async (req, res, next) => {
             var lyrics = await geniusFetch(track);
             if(lyrics == 0) {
                 lyrics = ['No lyrics found. Check Genius?'];
+            } else {
+                lyrics = lyrics.split('\n');
             }
             console.log(lyrics);
             res.render('playing', { 
