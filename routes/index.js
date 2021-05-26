@@ -26,7 +26,11 @@ router.get('/', async (req, res, next) => {
         if(req.cookies.geniusAccessToken) {
             // we have both tokens !
             const track = await spotifyFetch(req);
-            const lyrics = await geniusFetch(track);
+            var lyrics = await geniusFetch(track);
+            if(lyrics == 0) {
+                lyrics = ['No lyrics found. Check Genius?'];
+            }
+            console.log(lyrics);
             res.render('playing', { 
                 title: `now playing: ${track.name}`, 
                 trackName: track.name, 
@@ -64,9 +68,16 @@ async function spotifyFetch(req) {
 }
 
 async function geniusFetch(track) {
-    var searches = await Client.songs.search(`${track.name} ${track.artists[0].name}`).catch(console.log());
-    var lyrics = await searches[0].lyrics().catch(console.log());
-    return lyrics.split('\n');
+    var returnValue = 1;
+    try {
+        var searches = await Client.songs.search(`${track.name} ${track.artists[0].name}`)
+    } catch {
+        returnValue = 0
+    }
+    if (returnValue) {
+        var returnValue = await searches[0].lyrics().catch(console.log());
+    }
+    return returnValue;
 }
 
 module.exports = router;
