@@ -15,6 +15,7 @@ app.set('view engine', 'pug');
 app.use('/', indexRouter);
 app.use('/login', loginRouter);
 app.use('/callback', callbackRouter);
+app.use("/public", express.static(path.join(__dirname, 'public')));
 
 app.use((req, res, next) => {
     next(createError(404));
@@ -26,7 +27,11 @@ app.use((err, req, res, next) => {
     res.locals.error = req.app.get('env') === 'development' ? err : {};
 
     // render error page
-    res.status(err.status || 500);
+    if(err.status) {
+        res.status(err.status)
+    } else {
+        res.status(500);
+    }
     res.render('error');
 });
 

@@ -4,18 +4,23 @@ body {
     font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
 }
 
+p {
+    margin: 1px;
+}
+
 a {
     color: #00B7FF;
 }
 
 table {
+    float: right;
     border: 1px solid black;
     border-collapse: collapse;
 }
 
-div {
+/* div {
     float: right;
-}
+} */
 .table-text {
     float: left;
 }
