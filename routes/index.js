@@ -5,7 +5,17 @@ const createError = require('http-errors');
 const superagent = require('superagent');
 const axios = require('axios');
 const Genius = require("genius-lyrics");
-const Client = new Genius.Client();
+const fs = require('fs');
+var geniusKey;
+fs.readFile('./tokens.json', 'utf8', (error, data) => {
+    if(error) {
+        console.log('error');
+    } else {
+        const json_data = JSON.parse(data);
+        geniusKey = data.genius_api_token;
+    }
+});
+const Client = new Genius.Client(geniusKey);
 
 
 router.use(cookieParser());
@@ -16,13 +26,7 @@ router.get('/', async (req, res, next) => {
         if(req.cookies.geniusAccessToken) {
             // we have both tokens !
             const track = await spotifyFetch(req);
-            console.log(track);
-            const searches = await Client.songs.search(`${track.name} ${track.artists[0].name}`);
-            console.log(searches);
-            var lyrics = await searches[0].lyrics().catch(console.log());
-            const lyricsArray = lyrics.split('\n');
-            console.log(lyricsArray);
-
+            const lyrics = await geniusFetch(track);
             res.render('playing', { 
                 title: `now playing: ${track.name}`, 
                 trackName: track.name, 
@@ -32,51 +36,8 @@ router.get('/', async (req, res, next) => {
                 trackLink: track.external_urls.spotify,
                 lastfmTrackName: encodeURI(track.name),
                 lastfmArtistName: encodeURIComponent(track.artists[0].name),
-                lyrics: lyricsArray
+                lyrics: lyrics
             });
-            // superagent
-            //     .get('https://api.spotify.com/v1/me/player')
-            //     .set('Authorization', `Bearer ${req.cookies.spotifyAccessToken}`)
-            //     .set('Content-Type', 'application/json')
-            //     .set('Accept', 'application/json')
-            //     .then(spotifyRes => {
-            //         // console.log(spotifyRes);
-            //         const track = JSON.parse(spotifyRes.text).item;
-            //         // console.log(track);
-            //         const accessToken = `Bearer ${req.cookies.geniusAccessToken}`;
-            //         // console.log(accessToken);
-            //         // genius call
-            //         const term = encodeURIComponent(`${track.name} ${track.artists[0].name}`)
-            //         // const config = {};
-            //         // config.headers = {};
-            //         // config.headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36";
-            //         // config.headers["Authorization"] = accessToken;
-            //         // axios.get(`api.genius.com/search?q=${term}`, config)
-            //         //     .then(geniusRes => {
-            //         //         console.log(geniusRes);
-            //         //     })
-            //         //     .catch(geniusErr => {
-            //         //         console.log(geniusErr);
-            //         //     })
-            //         // superagent
-            //         //     .get('api.genius.com/search')
-            //         //     .send('Authorization', accessToken)
-            //         //     // .set('Accept', 'application/json')
-            //         //     .send('q', `west lachie`)
-            //         //     .then(geniusRes => {
-            //         //         console.log(geniusRes);
-            //         //     })
-            //         //     .catch(geniusErr => {
-            //         //         console.log(geniusErr.response.res.text);
-            //         //     })
-                    
-            //     })
-            //     .catch(spotifyErr => {
-            //         console.log(spotifyErr);
-            //         res.render('error');
-            //         next(createError(spotifyErr));
-            //     })
-            
         } else {
             res.redirect('/login/genius');
         }
@@ -100,6 +61,12 @@ async function spotifyFetch(req) {
         })
     })
     
+}
+
+async function geniusFetch(track) {
+    var searches = await Client.songs.search(`${track.name} ${track.artists[0].name}`).catch(console.log());
+    var lyrics = await searches[0].lyrics().catch(console.log());
+    return lyrics.split('\n');
 }
 
 module.exports = router;

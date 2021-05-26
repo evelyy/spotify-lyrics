@@ -4,7 +4,6 @@ const cookieParser = require('cookie-parser');
 const createError = require('http-errors');
 const superagent = require('superagent');
 const fs = require('fs');
-const { response } = require('express');
 
 router.use(cookieParser());
 
