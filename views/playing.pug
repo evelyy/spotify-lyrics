@@ -21,6 +21,6 @@ block content
                     img(class='logo' src='/public/images/spotify.png')
                 a(href=`https://last.fm/music/${artistName}`)
                     img(class='logo' src='/public/images/lastfm.png')
-    p this is where the lyric would go
-    img(class='fuck' src='/public/images/if_i_had_one.webp' onload='this.width/=2;')
+    each val in lyrics
+        p= val
     
