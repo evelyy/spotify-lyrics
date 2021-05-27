@@ -1,11 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const cookieParser = require('cookie-parser');
-const createError = require('http-errors');
+const getLyrics = require('../getLyrics');
 const superagent = require('superagent');
-const axios = require('axios');
-const Genius = require("genius-lyrics");
 const fs = require('fs');
+
 var geniusKey;
 fs.readFile('./tokens.json', 'utf8', (error, data) => {
     if(error) {
@@ -15,8 +14,6 @@ fs.readFile('./tokens.json', 'utf8', (error, data) => {
         geniusKey = data.genius_api_token;
     }
 });
-const Client = new Genius.Client(geniusKey);
-
 
 router.use(cookieParser());
 
@@ -32,12 +29,8 @@ router.get('/', async (req, res, next) => {
             } else {
                 trackName = track.name;
             }
-            var lyrics = await geniusFetch(track, trackName);
-            if(lyrics == 0) {
-                lyrics = ['No lyrics found. Check Genius?'];
-            } else {
-                lyrics = lyrics.split('\n');
-            }
+            var lyrics = await geniusFetch(track, req.cookies.geniusAccessToken);
+            lyrics = lyrics.split('\n');
             res.render('playing', { 
                 title: `now playing: ${track.name}`, 
                 trackName: track.name,
@@ -74,17 +67,14 @@ async function spotifyFetch(req) {
     
 }
 
-async function geniusFetch(track, trackName) {
-    var returnValue = 1;
-    try {
-        var searches = await Client.songs.search(`${trackName} ${track.artists[0].name}`).catch(console.log())
-    } catch {
-        returnValue = 0
+async function geniusFetch(track, apiKey) {
+    config = {
+        apiKey: apiKey,
+        title: track.name,
+        artist: track.artists[0].name
     }
-    if (returnValue) {
-        var returnValue = await searches[0].lyrics().catch(console.log());
-    }
-    return returnValue;
+    let lyrics = await getLyrics(config);
+    return lyrics;
 }
 
 module.exports = router;
