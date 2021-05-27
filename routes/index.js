@@ -23,25 +23,29 @@ router.get('/', async (req, res, next) => {
         if(req.cookies.geniusAccessToken) {
             // we have both tokens !
             const track = await spotifyFetch(req);
-            var trackName;
-            if (track.name.includes(' - ') && track.name.toUpperCase().includes('REMASTER')) {
-                trackName = track.name.split(' - ')[0];
-            } else {
-                trackName = track.name;
+            if(!track)
+                res.render('nothing_playing')
+            else {
+                var trackName;
+                if (track.name.includes(' - ') && track.name.toUpperCase().includes('REMASTER')) {
+                    trackName = track.name.split(' - ')[0];
+                } else {
+                    trackName = track.name;
+                }
+                var lyrics = await geniusFetch(track, req.cookies.geniusAccessToken, trackName);
+                lyrics = lyrics.split('\n');
+                res.render('playing', { 
+                    title: `now playing: ${track.name}`, 
+                    trackName: track.name,
+                    artistName: track.artists[0].name, 
+                    albumArt: track.album.images[1].url,
+                    artistLink: track.artists[0].external_urls.spotify,
+                    trackLink: track.external_urls.spotify,
+                    lastfmTrackName: encodeURI(trackName),
+                    lastfmArtistName: encodeURIComponent(track.artists[0].name),
+                    lyrics: lyrics
+                });
             }
-            var lyrics = await geniusFetch(track, req.cookies.geniusAccessToken, trackName);
-            lyrics = lyrics.split('\n');
-            res.render('playing', { 
-                title: `now playing: ${track.name}`, 
-                trackName: track.name,
-                artistName: track.artists[0].name, 
-                albumArt: track.album.images[1].url,
-                artistLink: track.artists[0].external_urls.spotify,
-                trackLink: track.external_urls.spotify,
-                lastfmTrackName: encodeURI(trackName),
-                lastfmArtistName: encodeURIComponent(track.artists[0].name),
-                lyrics: lyrics
-            });
         } else {
             res.redirect('/login/genius');
         }
@@ -58,7 +62,11 @@ async function spotifyFetch(req) {
         .set('Content-Type', 'application/json')
         .set('Accept', 'application/json')
         .then(spotifyRes => {
-            resolve(JSON.parse(spotifyRes.text).item);
+            let response = JSON.parse(spotifyRes.text)
+            if (response.is_playing)
+                resolve(response.item);
+            else
+                resolve(null)
         })
         .catch(spotifyErr => {
             reject(spotifyErr);
