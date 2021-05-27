@@ -29,7 +29,7 @@ router.get('/', async (req, res, next) => {
             } else {
                 trackName = track.name;
             }
-            var lyrics = await geniusFetch(track, req.cookies.geniusAccessToken);
+            var lyrics = await geniusFetch(track, req.cookies.geniusAccessToken, trackName);
             lyrics = lyrics.split('\n');
             res.render('playing', { 
                 title: `now playing: ${track.name}`, 
@@ -67,10 +67,10 @@ async function spotifyFetch(req) {
     
 }
 
-async function geniusFetch(track, apiKey) {
+async function geniusFetch(track, apiKey, trackName) {
     config = {
         apiKey: apiKey,
-        title: track.name,
+        title: trackName,
         artist: track.artists[0].name
     }
     let lyrics = await getLyrics(config);
