@@ -22,5 +22,8 @@ block content
                 a(href=`https://last.fm/music/${artistName}`)
                     img(class='logo' src='/public/images/lastfm.png')
     each val in lyrics
-        p= val
+        if val.startsWith('[')
+            p <strong>#{val}</strong>
+        else
+            p= val
     
