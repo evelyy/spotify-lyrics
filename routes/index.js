@@ -22,18 +22,23 @@ router.get('/', async (req, res, next) => {
     if(req.cookies.spotifyAccessToken) {
         if(req.cookies.geniusAccessToken) {
             // we have both tokens !
-            const track = await spotifyFetch(req);
+            const track = await spotifyFetch(req).catch('fuck');
             if(!track)
                 res.render('nothing_playing')
             else {
                 var trackName;
+                // remove the most common remaster syntax so genius can parse
                 if (track.name.includes(' - ') && track.name.toUpperCase().includes('REMASTER')) {
                     trackName = track.name.split(' - ')[0];
                 } else {
                     trackName = track.name;
                 }
                 var lyrics = await geniusFetch(track, req.cookies.geniusAccessToken, trackName);
-                lyrics = lyrics.split('\n');
+                // if nothing is found function returns null
+                if (lyrics)
+                    lyrics = lyrics.split('\n');
+                else
+                    lyrics = 'No lyrics found!';
                 res.render('playing', { 
                     title: `now playing: ${track.name}`, 
                     trackName: track.name,
@@ -81,7 +86,7 @@ async function geniusFetch(track, apiKey, trackName) {
         title: trackName,
         artist: track.artists[0].name
     }
-    let lyrics = await getLyrics(config);
+    let lyrics = await getLyrics(config).catch('whoops');
     return lyrics;
 }
 

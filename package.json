@@ -15,5 +15,6 @@
     "express": "^4.17.1",
     "pug": "^3.0.2",
     "superagent": "^6.1.0"
-  }
+  },
+  "devDependencies": {}
 }
